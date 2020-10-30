@@ -44,10 +44,15 @@
 
 #if WINAPI_MSWINDOWS
 #include "platform/MSWindowsScreen.h"
-#elif WINAPI_XWINDOWS
-#include "platform/XWindowsScreen.h"
 #elif WINAPI_CARBON
 #include "platform/OSXScreen.h"
+#else
+#if WINAPI_XWINDOWS
+#include "platform/XWindowsScreen.h"
+#endif
+#if WINAPI_WAYLAND
+#include "platform/WaylandScreen.h"
+#endif
 #endif
 
 #if defined(__APPLE__)
@@ -165,13 +170,26 @@ ClientApp::createScreen()
 #if WINAPI_MSWINDOWS
     return new barrier::Screen(new MSWindowsScreen(
         false, args().m_noHooks, args().m_stopOnDeskSwitch, m_events), m_events);
-#elif WINAPI_XWINDOWS
+#elif WINAPI_CARBON
+    return new barrier::Screen(new OSXScreen(m_events, false), m_events);
+#elif WINAPI_WAYLAND || WINAPI_XWINDOWS
+    // If neither was selected explicitly, switch depending on the
+    // environment variable. DISPLAY will always be set even under wayland,
+    // so we make wayland conditionally on WAYLAND_DISPLAY
+    if (!args().m_use_wayland && !args().m_use_x11)
+        args().m_use_wayland = getenv("WAYLAND_DISPLAY");
+
+#if WINAPI_WAYLAND
+    if (args().m_use_wayland)
+        return new barrier::Screen(new WaylandScreen(false, m_events), m_events);
+    else
+#endif
+#if WINAPI_XWINDOWS
     return new barrier::Screen(new XWindowsScreen(
         new XWindowsImpl(),
         args().m_display, false, args().m_disableXInitThreads,
         args().m_yscroll, m_events), m_events);
-#elif WINAPI_CARBON
-    return new barrier::Screen(new OSXScreen(m_events, false), m_events);
+#endif
 #endif
 }
 

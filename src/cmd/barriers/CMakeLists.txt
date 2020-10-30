@@ -22,29 +22,34 @@ if (WIN32)
     file(GLOB arch_headers "MSWindows*.h")
     file(GLOB arch_sources "MSWindows*.cpp")
     list(APPEND sources barriers.rc)
+    set(BUILD_BARRIERS true)
 elseif (APPLE)
     file(GLOB arch_headers "OSX*.h")
     file(GLOB arch_sources "OSX*.cpp")
+    set(BUILD_BARRIERS true)
 elseif (UNIX)
-    file(GLOB arch_headers "XWindows*.h")
-    file(GLOB arch_sources "XWindows*.cpp")
+    if (BARRIER_BUILD_X11)
+        file(GLOB arch_headers "XWindows*.h")
+        file(GLOB arch_sources "XWindows*.cpp")
+        set(BUILD_BARRIERS true)
+    endif()
 endif()
 
-list(APPEND sources ${arch_sources})
-list(APPEND headers ${arch_headers})
+if (BUILD_BARRIERS)
+    list(APPEND sources ${arch_sources})
+    list(APPEND headers ${arch_headers})
 
-if (BARRIER_ADD_HEADERS)
-    list(APPEND sources ${headers})
+    if (BARRIER_ADD_HEADERS)
+        list(APPEND sources ${headers})
+    endif()
+
+    add_executable(barriers ${sources})
+    target_link_libraries(barriers
+        arch base client common io mt net ipc platform server synlib ${libs} ${OPENSSL_LIBS})
+
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        install (TARGETS barriers DESTINATION ${BARRIER_BUNDLE_BINARY_DIR})
+    elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        install (TARGETS barriers DESTINATION bin)
+    endif()
 endif()
-
-add_executable(barriers ${sources})
-target_link_libraries(barriers
-    arch base client common io mt net ipc platform server synlib ${libs} ${OPENSSL_LIBS})
-
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    install (TARGETS barriers DESTINATION ${BARRIER_BUNDLE_BINARY_DIR})
-elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    install (TARGETS barriers DESTINATION bin)
-endif()
-
-

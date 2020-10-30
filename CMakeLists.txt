@@ -22,6 +22,8 @@ option (BARRIER_BUILD_GUI "Build the GUI" ON)
 option (BARRIER_BUILD_INSTALLER "Build the installer" ON)
 option (BARRIER_BUILD_TESTS "Build the tests" ON)
 option (BARRIER_USE_EXTERNAL_GTEST "Use external installation of Google Test framework" OFF)
+option (BARRIER_BUILD_X11 "Build with XWindows support" ON)
+option (BARRIER_BUILD_WAYLAND "Build with Wayland support" ON)
 
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set (CMAKE_CXX_STANDARD 14)
@@ -180,81 +182,93 @@ if (UNIX)
             set (CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES};${AVAHI_COMPAT_INCLUDE_DIRS}")
         endif ()
 
-        set (XKBlib "X11/Xlib.h;X11/XKBlib.h")
-        set (CMAKE_EXTRA_INCLUDE_FILES "${XKBlib};X11/extensions/Xrandr.h")
-        check_type_size ("XRRNotifyEvent" X11_EXTENSIONS_XRANDR_H)
-        set (HAVE_X11_EXTENSIONS_XRANDR_H "${X11_EXTENSIONS_XRANDR_H}")
-        set (CMAKE_EXTRA_INCLUDE_FILES)
+        if (BARRIER_BUILD_X11)
+            set (XKBlib "X11/Xlib.h;X11/XKBlib.h")
+            set (CMAKE_EXTRA_INCLUDE_FILES "${XKBlib};X11/extensions/Xrandr.h")
+            check_type_size ("XRRNotifyEvent" X11_EXTENSIONS_XRANDR_H)
+            set (HAVE_X11_EXTENSIONS_XRANDR_H "${X11_EXTENSIONS_XRANDR_H}")
+            set (CMAKE_EXTRA_INCLUDE_FILES)
 
-        check_include_files ("${XKBlib};X11/extensions/dpms.h" HAVE_X11_EXTENSIONS_DPMS_H)
-        check_include_files ("X11/extensions/Xinerama.h" HAVE_X11_EXTENSIONS_XINERAMA_H)
-        check_include_files ("${XKBlib};X11/extensions/XKBstr.h" HAVE_X11_EXTENSIONS_XKBSTR_H)
-        check_include_files ("X11/extensions/XKB.h" HAVE_XKB_EXTENSION)
-        check_include_files ("X11/extensions/XTest.h" HAVE_X11_EXTENSIONS_XTEST_H)
-        check_include_files ("${XKBlib}" HAVE_X11_XKBLIB_H)
-        check_include_files ("X11/extensions/XInput2.h" HAVE_XI2)
-        check_include_files ("dns_sd.h" HAVE_DNSSD)
+            check_include_files ("${XKBlib};X11/extensions/dpms.h" HAVE_X11_EXTENSIONS_DPMS_H)
+            check_include_files ("X11/extensions/Xinerama.h" HAVE_X11_EXTENSIONS_XINERAMA_H)
+            check_include_files ("${XKBlib};X11/extensions/XKBstr.h" HAVE_X11_EXTENSIONS_XKBSTR_H)
+            check_include_files ("X11/extensions/XKB.h" HAVE_XKB_EXTENSION)
+            check_include_files ("X11/extensions/XTest.h" HAVE_X11_EXTENSIONS_XTEST_H)
+            check_include_files ("${XKBlib}" HAVE_X11_XKBLIB_H)
+            check_include_files ("X11/extensions/XInput2.h" HAVE_XI2)
+            check_include_files ("dns_sd.h" HAVE_DNSSD)
 
-        if (NOT HAVE_X11_EXTENSIONS_XTEST_H)
-            message (FATAL_ERROR "Missing header: X11/extensions/XTest.h")
-        endif()
-
-        if (NOT HAVE_X11_XKBLIB_H)
-            message (FATAL_ERROR "Missing header: " ${XKBlib})
-        endif()
-
-        if (BARRIER_BUILD_GUI AND NOT HAVE_DNSSD)
-            message (FATAL_ERROR "Missing header: dns_sd.h")
-        endif()
-
-        check_library_exists ("SM;ICE" IceConnectionNumber "" HAVE_ICE)
-        check_library_exists ("Xext;X11" DPMSQueryExtension "" HAVE_Xext)
-        check_library_exists ("Xtst;Xext;X11" XTestQueryExtension "" HAVE_Xtst)
-        check_library_exists ("Xinerama" XineramaQueryExtension "" HAVE_Xinerama)
-        check_library_exists ("Xi" XISelectEvents "" HAVE_Xi)
-        check_library_exists ("Xrandr" XRRQueryExtension "" HAVE_Xrandr)
-
-        if (HAVE_ICE)
-
-            # Assume we have SM if we have ICE.
-            set (HAVE_SM 1)
-            list (APPEND libs SM ICE)
-
-        endif()
-
-        if (HAVE_Xtst)
-
-            # Xtxt depends on X11.
-            set (HAVE_X11 1)
-            list (APPEND libs Xtst X11)
-
-        else()
-
-            message (FATAL_ERROR "Missing library: Xtst")
-
-        endif()
-
-        if (HAVE_Xext)
-            list (APPEND libs Xext)
-        endif()
-
-        if (HAVE_Xinerama)
-            list (APPEND libs Xinerama)
-        else (HAVE_Xinerama)
-            if (HAVE_X11_EXTENSIONS_XINERAMA_H)
-                set (HAVE_X11_EXTENSIONS_XINERAMA_H 0)
-                message (WARNING "Old Xinerama implementation detected, disabled")
+            if (NOT HAVE_X11_EXTENSIONS_XTEST_H)
+                message (FATAL_ERROR "Missing header: X11/extensions/XTest.h")
             endif()
+
+            if (NOT HAVE_X11_XKBLIB_H)
+                message (FATAL_ERROR "Missing header: " ${XKBlib})
+            endif()
+
+            if (BARRIER_BUILD_GUI AND NOT HAVE_DNSSD)
+                message (FATAL_ERROR "Missing header: dns_sd.h")
+            endif()
+
+            check_library_exists ("SM;ICE" IceConnectionNumber "" HAVE_ICE)
+            check_library_exists ("Xext;X11" DPMSQueryExtension "" HAVE_Xext)
+            check_library_exists ("Xtst;Xext;X11" XTestQueryExtension "" HAVE_Xtst)
+            check_library_exists ("Xinerama" XineramaQueryExtension "" HAVE_Xinerama)
+            check_library_exists ("Xi" XISelectEvents "" HAVE_Xi)
+            check_library_exists ("Xrandr" XRRQueryExtension "" HAVE_Xrandr)
+
+            if (HAVE_ICE)
+
+                # Assume we have SM if we have ICE.
+                set (HAVE_SM 1)
+                list (APPEND libs SM ICE)
+
+            endif()
+
+            if (HAVE_Xtst)
+
+                # Xtxt depends on X11.
+                set (HAVE_X11 1)
+                list (APPEND libs Xtst X11)
+
+            else()
+
+                message (FATAL_ERROR "Missing library: Xtst")
+
+            endif()
+
+            if (HAVE_Xext)
+                list (APPEND libs Xext)
+            endif()
+
+            if (HAVE_Xinerama)
+                list (APPEND libs Xinerama)
+            else (HAVE_Xinerama)
+                if (HAVE_X11_EXTENSIONS_XINERAMA_H)
+                    set (HAVE_X11_EXTENSIONS_XINERAMA_H 0)
+                    message (WARNING "Old Xinerama implementation detected, disabled")
+                endif()
+            endif()
+
+            if (HAVE_Xrandr)
+                list (APPEND libs Xrandr)
+            endif()
+
+            # this was outside of the linux scope,
+            # not sure why, moving it back inside.
+            if (HAVE_Xi)
+                list (APPEND libs Xi)
+            endif()
+
         endif()
 
-        if (HAVE_Xrandr)
-            list (APPEND libs Xrandr)
-        endif()
-
-        # this was outside of the linux scope,
-        # not sure why, moving it back inside.
-        if (HAVE_Xi)
-            list (APPEND libs Xi)
+        # libei and wayland both use epoll internally
+        # no system that supports epoll doesn't have poll
+        if (BARRIER_BUILD_WAYLAND)
+            if (NOT HAVE_POLL)
+                message (FATAL_ERROR "poll is required for wayland support")
+            endif()
+            pkg_check_modules (LIBEI REQUIRED libei)
         endif()
 
     endif()
@@ -282,7 +296,15 @@ if (UNIX)
     if (APPLE)
         add_definitions (-DWINAPI_CARBON=1 -D_THREAD_SAFE)
     else()
-        add_definitions (-DWINAPI_XWINDOWS=1)
+        if (BARRIER_BUILD_WAYLAND)
+            add_definitions (-DWINAPI_WAYLAND=1)
+        endif()
+        if (BARRIER_BUILD_X11)
+            add_definitions (-DWINAPI_XWINDOWS=1)
+        endif()
+        if (NOT BARRIER_BUILD_WAYLAND AND NOT BARRIER_BUILD_X11)
+            message(FATAL_ERROR "One of X11 or Wayland is required")
+        endif()
     endif()
 
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")

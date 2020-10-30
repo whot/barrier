@@ -43,7 +43,9 @@ m_shouldExit(false),
 m_barrierAddress(),
 m_enableCrypto(false),
 m_profileDirectory(""),
-m_pluginDirectory("")
+m_pluginDirectory(""),
+m_use_wayland(false),
+m_use_x11(false)
 {
 }
 

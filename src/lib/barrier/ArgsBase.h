@@ -51,4 +51,6 @@ public:
     bool                m_enableCrypto;
     String              m_profileDirectory;
     String              m_pluginDirectory;
+    bool                m_use_wayland;
+    bool                m_use_x11;
 };

@@ -38,13 +38,15 @@ elseif (APPLE)
     )
     set(platform_headers)
 elseif (UNIX)
-    set(platform_sources
-        platform/XWindowsClipboardTests.cpp
-        platform/XWindowsKeyStateTests.cpp
-        platform/XWindowsScreenSaverTests.cpp
-        platform/XWindowsScreenTests.cpp
-    )
-    set(platform_headers)
+    if (BARRIER_BUILD_X11)
+        set(platform_sources
+            platform/XWindowsClipboardTests.cpp
+            platform/XWindowsKeyStateTests.cpp
+            platform/XWindowsScreenSaverTests.cpp
+            platform/XWindowsScreenTests.cpp
+        )
+        set(platform_headers)
+    endif()
 endif()
 
 list(APPEND sources ${platform_sources})

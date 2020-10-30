@@ -169,7 +169,10 @@ ArgParser::parseCarbonArg(ArgsBase& argsBase, const int& argc, const char* const
 bool
 ArgParser::parseXWindowsArg(ArgsBase& argsBase, const int& argc, const char* const* argv, int& i)
 {
-    if (isArg(i, argc, argv, "-display", "--display", 1)) {
+    if (isArg(i, argc, argv, NULL, "--x11")) {
+        // handled after else
+    }
+    else if (isArg(i, argc, argv, "-display", "--display", 1)) {
         // use alternative display
         argsBase.m_display = argv[++i];
     }
@@ -179,6 +182,37 @@ ArgParser::parseXWindowsArg(ArgsBase& argsBase, const int& argc, const char* con
         // option not supported here
         return false;
     }
+
+    // A valid X11 option, but we've already decided on wayland
+    if (argsBase.m_use_wayland) {
+        LOG((CLOG_INFO "Cannot use X11-specific arguments for --wayland"));
+        return false;
+    }
+    // Specifying any X11-specific arg implies --x11
+    argsBase.m_use_x11 = true;
+
+    return true;
+}
+#endif
+
+#if WINAPI_WAYLAND
+bool
+ArgParser::parseWaylandArg(ArgsBase& argsBase, const int& argc, const char* const* argv, int& i)
+{
+    if (isArg(i, argc, argv, NULL, "--wayland")) {
+        // handled after else
+    } else {
+        // option not supported here
+        return false;
+    }
+
+    // A valid Wayland option, but we've already decided on x11
+    if (argsBase.m_use_x11) {
+        LOG((CLOG_INFO "Cannot use Wayland-specific arguments for --x11"));
+        return false;
+    }
+    // Specifying any wayland-specific arg implies --wayland
+    argsBase.m_use_wayland = true;
 
     return true;
 }
@@ -191,8 +225,20 @@ ArgParser::parsePlatformArg(ArgsBase& argsBase, const int& argc, const char* con
     return parseMSWindowsArgs(argsBase, argc, argv, i);
 #elif WINAPI_CARBON
     return parseCarbonArg(argsBase, argc, argv, i);
-#elif WINAPI_XWINDOWS
-    return parseXWindowsArg(argsBase, argc, argv, i);
+#elif WINAPI_XWINDOWS || WINAPI_WAYLAND
+
+    // This is a bit tricky because either arg parser may return false for
+    // invalid arguments, and since the argument list doesn't overlap, at
+    // least one of those will always return false.
+    // If one of them returns true, we are happy with the argument.
+    bool x11 = false, wld = false;
+#if WINAPI_XWINDOWS
+    x11 = parseXWindowsArg(argsBase, argc, argv, i);
+#endif
+#if WINAPI_WAYLAND
+    wld = parseWaylandArg(argsBase, argc, argv, i);
+#endif
+    return x11 || wld;
 #endif
 }
 
@@ -259,7 +305,7 @@ ArgParser::parseGenericArgs(int argc, const char* const* argv, int& i)
     else if (isArg(i, argc, argv, NULL, "--enable-drag-drop")) {
         bool useDragDrop = true;
 
-#ifdef WINAPI_XWINDOWS
+#if defined WINAPI_XWINDOWS || defined WINAPI_WAYLAND
 
         useDragDrop = false;
         LOG((CLOG_INFO "ignoring --enable-drag-drop, not supported on linux."));

@@ -23,7 +23,7 @@
 
 #if WINAPI_MSWINDOWS
 #include "MSWindowsClientTaskBarReceiver.h"
-#elif WINAPI_XWINDOWS
+#elif WINAPI_XWINDOWS || WINAPI_WAYLAND /* FIXME */
 #include "XWindowsClientTaskBarReceiver.h"
 #elif WINAPI_CARBON
 #include "OSXClientTaskBarReceiver.h"
