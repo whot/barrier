@@ -30,11 +30,11 @@ public:
     bool                m_backend;
     bool                m_restartable;
     bool                m_noHooks;
-    std::string            m_exename;
-    const char*            m_logFilter;
-    const char*            m_logFile;
-    const char*            m_display;
-    String                m_name;
+    std::string         m_exename;
+    const char*         m_logFilter;
+    const char*         m_logFile;
+    const char*         m_display;
+    String              m_name;
     bool                m_disableTray;
     bool                m_enableIpc;
     bool                m_enableDragDrop;
@@ -47,8 +47,8 @@ public:
     bool                m_disableXInitThreads;
 #endif
     bool                m_shouldExit;
-    String                m_barrierAddress;
+    String              m_barrierAddress;
     bool                m_enableCrypto;
-    String                m_profileDirectory;
-    String                m_pluginDirectory;
+    String              m_profileDirectory;
+    String              m_pluginDirectory;
 };

@@ -47,17 +47,17 @@ public:
     virtual void*        getEventTarget() const;
     virtual bool        getClipboard(ClipboardID id, IClipboard*) const;
     virtual void        getShape(SInt32& x, SInt32& y,
-                            SInt32& width, SInt32& height) const;
+                                 SInt32& width, SInt32& height) const;
     virtual void        getCursorPos(SInt32& x, SInt32& y) const;
 
     // IPrimaryScreen overrides
     virtual void        reconfigure(UInt32 activeSides);
     virtual void        warpCursor(SInt32 x, SInt32 y);
-    virtual UInt32        registerHotKey(KeyID key, KeyModifierMask mask);
+    virtual UInt32      registerHotKey(KeyID key, KeyModifierMask mask);
     virtual void        unregisterHotKey(UInt32 id);
     virtual void        fakeInputBegin();
     virtual void        fakeInputEnd();
-    virtual SInt32        getJumpZoneSize() const;
+    virtual SInt32      getJumpZoneSize() const;
     virtual bool        isAnyMouseButtonDown(UInt32& buttonID) const;
     virtual void        getCursorCenter(SInt32& x, SInt32& y) const;
 
@@ -86,7 +86,7 @@ protected:
     // IPlatformScreen overrides
     virtual void        handleSystemEvent(const Event&, void*);
     virtual void        updateButtons();
-    virtual IKeyState*    getKeyState() const;
+    virtual IKeyState*  getKeyState() const;
 
 private:
     // event sending
@@ -94,11 +94,11 @@ private:
     void                sendClipboardEvent(Event::Type, ClipboardID);
 
     // create the transparent cursor
-    Cursor                createBlankCursor() const;
+    Cursor              createBlankCursor() const;
 
     // determine the clipboard from the X selection.  returns
     // kClipboardEnd if no such clipboard.
-    ClipboardID            getClipboardID(Atom selection) const;
+    ClipboardID         getClipboardID(Atom selection) const;
 
     // continue processing a selection request
     void                processClipboardRequest(Window window,
@@ -114,15 +114,15 @@ private:
 private:
     class KeyEventFilter {
     public:
-        int                m_event;
-        Window            m_window;
+        int             m_event;
+        Window          m_window;
         Time            m_time;
-        KeyCode            m_keycode;
+        KeyCode         m_keycode;
     };
 
     Display*            openDisplay(const char* displayName);
     void                saveShape();
-    Window                openWindow() const;
+    Window              openWindow() const;
     void                openIM();
 
     bool                grabMouseAndKeyboard();
@@ -145,7 +145,7 @@ private:
     void                selectEvents(Window) const;
     void                doSelectEvents(Window) const;
 
-    KeyID                mapKeyFromX(XKeyEvent*) const;
+    KeyID               mapKeyFromX(XKeyEvent*) const;
     ButtonID            mapButtonFromX(const XButtonEvent*) const;
     unsigned int        mapButtonToX(ButtonID id) const;
 
@@ -153,7 +153,7 @@ private:
 
     void                refreshKeyboard(XEvent*);
 
-    static Bool            findKeyEvent(Display*, XEvent* xevent, XPointer arg);
+    static Bool         findKeyEvent(Display*, XEvent* xevent, XPointer arg);
 
 private:
     struct HotKeyItem {
@@ -163,7 +163,7 @@ private:
         bool            operator<(const HotKeyItem&) const;
 
     private:
-        int                m_keycode;
+        int             m_keycode;
         unsigned int    m_mask;
     };
     typedef std::set<bool> FilteredKeycodes;
@@ -172,7 +172,7 @@ private:
     typedef std::vector<UInt32> HotKeyIDList;
     typedef std::map<HotKeyItem, UInt32> HotKeyToIDMap;
 
-    IXWindowsImpl*       m_impl;
+    IXWindowsImpl*      m_impl;
 
     // true if screen is being used as a primary screen, false otherwise
     bool                m_isPrimary;
@@ -187,44 +187,44 @@ private:
     mutable int         m_y_accumulatedScroll;
 
     Display*            m_display;
-    Window                m_root;
-    Window                m_window;
+    Window              m_root;
+    Window              m_window;
 
     // true if mouse has entered the screen
     bool                m_isOnScreen;
 
     // screen shape stuff
-    SInt32                m_x, m_y;
-    SInt32                m_w, m_h;
-    SInt32                m_xCenter, m_yCenter;
+    SInt32              m_x, m_y;
+    SInt32              m_w, m_h;
+    SInt32              m_xCenter, m_yCenter;
 
     // last mouse position
-    SInt32                m_xCursor, m_yCursor;
+    SInt32              m_xCursor, m_yCursor;
 
     // keyboard stuff
-    XWindowsKeyState*    m_keyState;
+    XWindowsKeyState*   m_keyState;
 
     // hot key stuff
-    HotKeyMap            m_hotKeys;
+    HotKeyMap           m_hotKeys;
     HotKeyIDList        m_oldHotKeyIDs;
-    HotKeyToIDMap        m_hotKeyToIDMap;
+    HotKeyToIDMap       m_hotKeyToIDMap;
 
     // input focus stuff
-    Window                m_lastFocus;
-    int                    m_lastFocusRevert;
+    Window              m_lastFocus;
+    int                 m_lastFocusRevert;
 
     // input method stuff
-    XIM                    m_im;
-    XIC                    m_ic;
-    KeyCode                m_lastKeycode;
+    XIM                 m_im;
+    XIC                 m_ic;
+    KeyCode             m_lastKeycode;
     FilteredKeycodes    m_filtered;
 
     // clipboards
-    XWindowsClipboard*    m_clipboard[kClipboardEnd];
-    UInt32                m_sequenceNumber;
+    XWindowsClipboard*  m_clipboard[kClipboardEnd];
+    UInt32              m_sequenceNumber;
 
     // screen saver stuff
-    XWindowsScreenSaver*    m_screensaver;
+    XWindowsScreenSaver* m_screensaver;
     bool                m_screensaverNotify;
 
     // logical to physical button mapping.  m_buttons[i] gives the
@@ -247,7 +247,7 @@ private:
 
     // XKB extension stuff
     bool                m_xkb;
-    int                    m_xkbEventBase;
+    int                 m_xkbEventBase;
 
     bool                m_xi2detected;
 
@@ -256,7 +256,7 @@ private:
     int                 m_xrandrEventBase;
 
     IEventQueue*        m_events;
-    barrier::KeyMap                m_keyMap;
+    barrier::KeyMap     m_keyMap;
 
     // pointer to (singleton) screen.  this is only needed by
     // ioErrorHandler().
