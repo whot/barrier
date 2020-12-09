@@ -58,17 +58,17 @@ public:
     virtual void        removeHandlers(void* target);
     virtual Event::Type
                         registerTypeOnce(Event::Type& type, const char* name);
-    virtual IEventJob*    getHandler(Event::Type type, void* target) const;
-    virtual const char*    getTypeName(Event::Type type);
+    virtual IEventJob*  getHandler(Event::Type type, void* target) const;
+    virtual const char* getTypeName(Event::Type type);
     virtual Event::Type getRegisteredType(const std::string& name) const;
-    void*                getSystemTarget();
+    void*               getSystemTarget();
     virtual void        waitForReady() const;
 
 private:
-    UInt32                saveEvent(const Event& event);
-    Event                removeEvent(UInt32 eventID);
+    UInt32              saveEvent(const Event& event);
+    Event               removeEvent(UInt32 eventID);
     bool                hasTimerExpired(Event& event);
-    double                getNextTimerTimeout() const;
+    double              getNextTimerTimeout() const;
     void                addEventToBuffer(const Event& event);
     bool                parent_requests_shutdown() const;
 
@@ -81,24 +81,23 @@ private:
 
         void            reset();
 
-        Timer&            operator-=(double);
-
+        Timer&          operator-=(double);
                         operator double() const;
 
         bool            isOneShot() const;
         EventQueueTimer*
                         getTimer() const;
-        void*            getTarget() const;
+        void*           getTarget() const;
         void            fillEvent(TimerEvent&) const;
 
         bool            operator<(const Timer&) const;
 
     private:
-        EventQueueTimer*    m_timer;
-        double                m_timeout;
-        void*                m_target;
-        bool                m_oneShot;
-        double                m_time;
+        EventQueueTimer* m_timer;
+        double           m_timeout;
+        void*            m_target;
+        bool             m_oneShot;
+        double           m_time;
     };
 
     typedef std::set<EventQueueTimer*> Timers;
@@ -119,71 +118,71 @@ private:
     NameMap            m_nameMap;
 
     // buffer of events
-    IEventQueueBuffer*    m_buffer;
+    IEventQueueBuffer* m_buffer;
 
     // saved events
-    EventTable            m_events;
+    EventTable         m_events;
     EventIDList        m_oldEventIDs;
 
     // timers
-    Stopwatch            m_time;
-    Timers                m_timers;
-    TimerQueue            m_timerQueue;
-    TimerEvent            m_timerEvent;
+    Stopwatch          m_time;
+    Timers             m_timers;
+    TimerQueue         m_timerQueue;
+    TimerEvent         m_timerEvent;
 
     // event handlers
-    HandlerTable        m_handlers;
+    HandlerTable       m_handlers;
 
 public:
     //
     // Event type providers.
     //
-    ClientEvents&                forClient();
-    IStreamEvents&                forIStream();
+    ClientEvents&               forClient();
+    IStreamEvents&              forIStream();
     IpcClientEvents&            forIpcClient();
-    IpcClientProxyEvents&        forIpcClientProxy();
+    IpcClientProxyEvents&       forIpcClientProxy();
     IpcServerEvents&            forIpcServer();
-    IpcServerProxyEvents&        forIpcServerProxy();
-    IDataSocketEvents&            forIDataSocket();
+    IpcServerProxyEvents&       forIpcServerProxy();
+    IDataSocketEvents&          forIDataSocket();
     IListenSocketEvents&        forIListenSocket();
-    ISocketEvents&                forISocket();
+    ISocketEvents&              forISocket();
     OSXScreenEvents&            forOSXScreen();
-    ClientListenerEvents&        forClientListener();
-    ClientProxyEvents&            forClientProxy();
-    ClientProxyUnknownEvents&    forClientProxyUnknown();
-    ServerEvents&                forServer();
+    ClientListenerEvents&       forClientListener();
+    ClientProxyEvents&          forClientProxy();
+    ClientProxyUnknownEvents&   forClientProxyUnknown();
+    ServerEvents&               forServer();
     ServerAppEvents&            forServerApp();
     IKeyStateEvents&            forIKeyState();
-    IPrimaryScreenEvents&        forIPrimaryScreen();
-    IScreenEvents&                forIScreen();
+    IPrimaryScreenEvents&       forIPrimaryScreen();
+    IScreenEvents&              forIScreen();
     ClipboardEvents&            forClipboard();
-    FileEvents&                    forFile();
+    FileEvents&                 forFile();
 
 private:
-    ClientEvents*                m_typesForClient;
-    IStreamEvents*                m_typesForIStream;
+    ClientEvents*               m_typesForClient;
+    IStreamEvents*              m_typesForIStream;
     IpcClientEvents*            m_typesForIpcClient;
-    IpcClientProxyEvents*        m_typesForIpcClientProxy;
+    IpcClientProxyEvents*       m_typesForIpcClientProxy;
     IpcServerEvents*            m_typesForIpcServer;
-    IpcServerProxyEvents*        m_typesForIpcServerProxy;
-    IDataSocketEvents*            m_typesForIDataSocket;
+    IpcServerProxyEvents*       m_typesForIpcServerProxy;
+    IDataSocketEvents*          m_typesForIDataSocket;
     IListenSocketEvents*        m_typesForIListenSocket;
-    ISocketEvents*                m_typesForISocket;
+    ISocketEvents*              m_typesForISocket;
     OSXScreenEvents*            m_typesForOSXScreen;
-    ClientListenerEvents*        m_typesForClientListener;
-    ClientProxyEvents*            m_typesForClientProxy;
-    ClientProxyUnknownEvents*    m_typesForClientProxyUnknown;
-    ServerEvents*                m_typesForServer;
+    ClientListenerEvents*       m_typesForClientListener;
+    ClientProxyEvents*          m_typesForClientProxy;
+    ClientProxyUnknownEvents*   m_typesForClientProxyUnknown;
+    ServerEvents*               m_typesForServer;
     ServerAppEvents*            m_typesForServerApp;
     IKeyStateEvents*            m_typesForIKeyState;
-    IPrimaryScreenEvents*        m_typesForIPrimaryScreen;
-    IScreenEvents*                m_typesForIScreen;
+    IPrimaryScreenEvents*       m_typesForIPrimaryScreen;
+    IScreenEvents*              m_typesForIScreen;
     ClipboardEvents*            m_typesForClipboard;
-    FileEvents*                    m_typesForFile;
-    Mutex*                        m_readyMutex;
-    CondVar<bool>*                m_readyCondVar;
-    std::queue<Event>            m_pending;
-    NonBlockingStream            m_parentStream;
+    FileEvents*                 m_typesForFile;
+    Mutex*                      m_readyMutex;
+    CondVar<bool>*              m_readyCondVar;
+    std::queue<Event>           m_pending;
+    NonBlockingStream           m_parentStream;
 };
 
 #define EVENT_TYPE_ACCESSOR(type_)                                            \

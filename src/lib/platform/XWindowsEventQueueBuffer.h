@@ -35,7 +35,7 @@ public:
     virtual ~XWindowsEventQueueBuffer();
 
     // IEventQueueBuffer overrides
-    virtual    void        init() { }
+    virtual void        init() { }
     virtual void        waitForEvent(double timeout);
     virtual Type        getEvent(Event& event, UInt32& dataID);
     virtual bool        addEvent(UInt32 dataID);
@@ -51,15 +51,15 @@ private:
 
 private:
     typedef std::vector<XEvent> EventList;
-     IXWindowsImpl*       m_impl;
+    IXWindowsImpl*      m_impl;
 
-    Mutex                m_mutex;
+    Mutex               m_mutex;
     Display*            m_display;
-    Window                m_window;
+    Window              m_window;
     Atom                m_userEvent;
-    XEvent                m_event;
-    EventList            m_postedEvents;
+    XEvent              m_event;
+    EventList           m_postedEvents;
     bool                m_waiting;
-    int                    m_pipefd[2];
+    int                 m_pipefd[2];
     IEventQueue*        m_events;
 };
