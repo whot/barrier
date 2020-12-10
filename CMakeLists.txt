@@ -269,6 +269,7 @@ if (UNIX)
                 message (FATAL_ERROR "poll is required for wayland support")
             endif()
             pkg_check_modules (LIBEI REQUIRED libei)
+            pkg_check_modules (WAYLANDPP REQUIRED wayland-client++ wayland-client-extra++ wayland-client-unstable++)
         endif()
 
     endif()

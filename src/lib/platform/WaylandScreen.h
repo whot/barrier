@@ -23,6 +23,10 @@
 #include "common/stdset.h"
 #include "common/stdvector.h"
 
+#include <wayland-client.hpp>
+
+using namespace wayland;
+
 class WaylandClipboard;
 class WaylandKeyState;
 
@@ -94,4 +98,8 @@ private:
     struct ei_seat      *m_ei_seat;
     struct ei_device    *m_ei_device;
 
+    display_t           m_display;
+    registry_t          m_registry;
+
+    SInt32              m_x, m_y, m_w, m_h;
 };

@@ -33,6 +33,8 @@ elseif (UNIX)
 
         list(APPEND libs ${LIBEI_LIBRARIES})
         list(APPEND inc ${LIBEI_INCLUDE_DIRS})
+        list(APPEND libs ${WAYLANDPP_LIBRARIES})
+        list(APPEND inc ${WAYLANDPP_INCLUDE_DIRS})
     endif()
 
     if (BARRIER_BUILD_X11)

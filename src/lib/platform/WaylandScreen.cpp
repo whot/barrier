@@ -36,9 +36,24 @@
 #include <cstdlib>
 #include <algorithm>
 #include <unistd.h>
+#include <vector>
 
+#include <wayland-client-protocol-unstable.hpp>
 
 #include <libei.h>
+
+class Output {
+public:
+        Output() {}
+        ~Output() {}
+public:
+        output_t output;
+        SInt32 x, y;
+        SInt32 w, h;
+
+public:
+};
+
 
 //
 // WaylandScreen
@@ -57,6 +72,59 @@ WaylandScreen::WaylandScreen(
 {
 	// Server isn't supported yet
 	assert(!isPrimary);
+
+    zxdg_output_manager_v1_t xdg_output_mgr;
+    bool have_xdg_output = false;
+
+    // A pair of object element and 4 coordinates for x, y, w, h
+    std::vector<Output> outputs;
+    m_registry = m_display.get_registry();
+    m_registry.on_global() = [&](uint32_t name, const std::string& interface, uint32_t version) {
+        if (interface == zxdg_output_manager_v1_t::interface_name) {
+            m_registry.bind(name, xdg_output_mgr, version);
+            have_xdg_output = true;
+        } else if (interface == output_t::interface_name) {
+            outputs.emplace_back();
+            auto& output = outputs.back();
+            m_registry.bind(name, output.output, version);
+            output.output.on_geometry() = [&](uint32_t x, int32_t y, int32_t w, int32_t h,
+                                              output_subpixel subpixel,
+                                              std::string make, std::string model,
+                                              output_transform transform) {
+                // this gets overwritten by the xdg_output information later
+                output.x = x;
+                output.y = y;
+                output.w = w;
+                output.h = h;
+            };
+        }
+    };
+    m_display.roundtrip();
+    m_display.roundtrip();
+
+    if (have_xdg_output) {
+        for (auto &output : outputs) {
+            auto xdg_output = xdg_output_mgr.get_xdg_output(output.output);
+            xdg_output.on_logical_size() = [&](int32_t w, int32_t h) {
+                output.w = w;
+                output.h = h;
+            };
+            xdg_output.on_logical_position() = [&](int32_t x, int32_t y) {
+                output.x = x;
+                output.y = y;
+            };
+            m_display.roundtrip();
+        }
+    }
+
+    for (auto &output : outputs) {
+        m_x = std::min(output.x, m_x);
+        m_y = std::min(output.y, m_y);
+        m_w = std::max(output.x + output.w, m_w);
+        m_h = std::max(output.y + output.h, m_h);
+    }
+    assert(m_w > 0);
+    LOG((CLOG_NOTE "Logical output size: %dx%d@%d.%d", m_w, m_h, m_x, m_y));
 
 	m_ei = ei_new(NULL);
 	ei_log_set_priority(m_ei, EI_LOG_PRIORITY_DEBUG);
@@ -96,7 +164,6 @@ WaylandScreen::~WaylandScreen()
 void*
 WaylandScreen::getEventTarget() const
 {
-	printf("::::::::: %s:%d:%s() - \n", __FILE__, __LINE__, __func__);
 	return const_cast<WaylandScreen*>(this);
 }
 
@@ -111,12 +178,10 @@ WaylandScreen::getClipboard(ClipboardID id, IClipboard* clipboard) const
 void
 WaylandScreen::getShape(SInt32& x, SInt32& y, SInt32& w, SInt32& h) const
 {
-	printf("::::::::: %s:%d:%s() - \n", __FILE__, __LINE__, __func__);
-	/* FIXME */
-	x = 0;
-	y = 0;
-	w = 1920;
-	h = 1080;
+	x = m_x;
+	y = m_y;
+	w = m_w;
+	h = m_h;
 }
 
 void
