@@ -292,6 +292,7 @@ elseif (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     list (APPEND libs Wtsapi32 Userenv Wininet comsuppw Shlwapi)
 
     add_definitions (
+        /DSYSAPI_WIN32=1
         /DWINAPI_MSWINDOWS=1
         /DWIN32
         /D_WINDOWS
