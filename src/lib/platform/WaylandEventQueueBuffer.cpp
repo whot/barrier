@@ -20,6 +20,7 @@
 
 #include "base/Event.h"
 #include "base/IEventQueue.h"
+#include "mt/Lock.h"
 #include "mt/Thread.h"
 
 #include <fcntl.h>
@@ -82,6 +83,7 @@ WaylandEventQueueBuffer::waitForEvent(double timeout_in_ms)
     int retval = poll(pfds, POLLFD_COUNT, timeout);
     if (retval > 0) {
         if (pfds[EIFD].revents & POLLIN) {
+            Lock lock(&m_mutex);
             ei_dispatch(m_ei);
         }
         if (pfds[PIPEFD].revents & POLLIN) {
@@ -104,10 +106,12 @@ WaylandEventQueueBuffer::getEvent(Event& event, UInt32& dataID)
         return kUser;
     }
 
-    struct ei_event *ev = ei_get_event(m_ei);
+    // We don't pass the EI event back, instead we pass back the mutex
+    // to the EI context and let the caller handle all events in one loop.
     event = Event(Event::kSystem,
                   m_events->getSystemTarget(),
-                  ev);
+                  &m_mutex);
+
     return kSystem;
 }
 
@@ -128,11 +132,12 @@ WaylandEventQueueBuffer::isEmpty() const
     if (!m_custom_events.empty())
         return false;
 
-    struct ei_event *event;
-    event = ei_peek_event(m_ei);
-    bool retval = event == NULL;
+    Lock lock(&m_mutex);
+
+    struct ei_event *event = ei_peek_event(m_ei);
+    bool is_empty = (event == NULL);
     ei_event_unref(event);
-    return retval;
+    return is_empty;
 }
 
 EventQueueTimer*

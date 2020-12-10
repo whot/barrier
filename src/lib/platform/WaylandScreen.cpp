@@ -29,6 +29,8 @@
 #include "base/Stopwatch.h"
 #include "base/IEventQueue.h"
 #include "base/TMethodEventJob.h"
+#include "mt/Mutex.h"
+#include "mt/Lock.h"
 
 #include <cstring>
 #include <cstdlib>
@@ -298,41 +300,43 @@ WaylandScreen::isPrimary() const
 void
 WaylandScreen::handleSystemEvent(const Event& sysevent, void* data)
 {
-    struct ei_event *event = static_cast<struct ei_event*>(sysevent.getData());
-    if (!event)
-        return;
+    Mutex *mutex = static_cast<Mutex *>(sysevent.getData());
+    Lock lock(mutex);
 
-    switch (ei_event_get_type(event)) {
-        case EI_EVENT_SEAT_ADDED:
-            if (!m_ei_seat) {
-                m_ei_seat = ei_seat_ref(ei_event_get_seat(event));
-                LOG((CLOG_DEBUG "using seat %s", ei_seat_get_name(m_ei_seat)));
+    struct ei_event *event;
+    while ((event = ei_get_event(m_ei)) != NULL) {
+        switch (ei_event_get_type(event)) {
+            case EI_EVENT_SEAT_ADDED:
+                if (!m_ei_seat) {
+                    m_ei_seat = ei_seat_ref(ei_event_get_seat(event));
+                    LOG((CLOG_DEBUG "using seat %s", ei_seat_get_name(m_ei_seat)));
 
-                auto device = ei_device_new(m_ei_seat);
-                ei_device_configure_capability(device, EI_DEVICE_CAP_POINTER);
-                ei_device_configure_capability(device, EI_DEVICE_CAP_POINTER_ABSOLUTE);
-                ei_device_configure_capability(device, EI_DEVICE_CAP_KEYBOARD);
-                SInt32 x, y, w, h;
+                    auto device = ei_device_new(m_ei_seat);
+                    ei_device_configure_capability(device, EI_DEVICE_CAP_POINTER);
+                    ei_device_configure_capability(device, EI_DEVICE_CAP_POINTER_ABSOLUTE);
+                    ei_device_configure_capability(device, EI_DEVICE_CAP_KEYBOARD);
+                    SInt32 x, y, w, h;
 
-                getShape(x, y, w, h);
-                ei_device_pointer_configure_range(device, w, h);
-                ei_device_add(device);
-                ei_device_unref(device);
-            }
-            break;
-        case EI_EVENT_DEVICE_REMOVED:
-        case EI_EVENT_SEAT_REMOVED:
-        case EI_EVENT_DISCONNECT:
-        case EI_EVENT_DEVICE_SUSPENDED:
-            throw XArch("Oops, EIS didn't like us");
-        case EI_EVENT_DEVICE_ADDED:
-            break;
-        case EI_EVENT_DEVICE_RESUMED:
-            LOG((CLOG_DEBUG "device %s is available", ei_device_get_name(ei_event_get_device(event))));
-            m_ei_device = ei_device_ref(ei_event_get_device(event));
-            break;
+                    getShape(x, y, w, h);
+                    ei_device_pointer_configure_range(device, w, h);
+                    ei_device_add(device);
+                    ei_device_unref(device);
+                }
+                break;
+            case EI_EVENT_DEVICE_REMOVED:
+            case EI_EVENT_SEAT_REMOVED:
+            case EI_EVENT_DISCONNECT:
+            case EI_EVENT_DEVICE_SUSPENDED:
+                throw XArch("Oops, EIS didn't like us");
+            case EI_EVENT_DEVICE_ADDED:
+                break;
+            case EI_EVENT_DEVICE_RESUMED:
+                LOG((CLOG_DEBUG "device %s is available", ei_device_get_name(ei_event_get_device(event))));
+                m_ei_device = ei_device_ref(ei_event_get_device(event));
+                break;
+        }
+        ei_event_unref(event);
     }
-    ei_event_unref(event);
 }
 
 void

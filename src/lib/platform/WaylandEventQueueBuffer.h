@@ -50,4 +50,5 @@ private:
     IEventQueue*        m_events;
     std::queue<UInt32>  m_custom_events;
     int                 m_pipe_w, m_pipe_r;
+    Mutex               m_mutex;
 };
